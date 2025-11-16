@@ -77,7 +77,13 @@ class CartProvider with ChangeNotifier {
   double get vat => subtotal * 0.12;
   double get totalPrice => subtotal + vat;
 
-  void addItem(String productId, String name, double price, int quantity) {
+  void addItem(String productId, String name, double price, int quantity) async {
+    final doc = await _firestore.collection('products').doc(productId).get();
+    final stock = doc.data()?['stock'] ?? 0;
+    if (stock < quantity) {
+      throw Exception('Not enough stock available.');
+    }
+
     if (_items.containsKey(productId)) {
       _items[productId]!.quantity += quantity;
     } else {
@@ -156,15 +162,13 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-
-    Future<void> placeOrder() async {
+  Future<void> placeOrder() async {
     if (_userId == null || _items.isEmpty) {
       throw Exception('Cart is empty or user not logged in.');
     }
 
     try {
       final cartData = _items.values.map((item) => item.toJson()).toList();
-
 
       final double roundedSubtotal = double.parse(subtotal.toStringAsFixed(2));
       final double roundedVat = double.parse((roundedSubtotal * 0.12).toStringAsFixed(2));
@@ -181,13 +185,24 @@ class CartProvider with ChangeNotifier {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      for (var item in _items.values) {
+        final docRef = _firestore.collection('products').doc(item.id);
+        await _firestore.runTransaction((transaction) async {
+          final doc = await transaction.get(docRef);
+          final currentStock = doc.data()?['stock'] ?? 0;
+          if (currentStock < item.quantity) {
+            throw Exception('Stock insufficient for ${item.name}');
+          }
+          transaction.update(docRef, {'stock': currentStock - item.quantity});
+        });
+      }
+
       await clearCart();
     } catch (e) {
       debugPrint('Error placing order: $e');
       rethrow;
     }
   }
-
 
   @override
   void dispose() {

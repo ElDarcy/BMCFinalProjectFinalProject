@@ -11,7 +11,6 @@ import 'package:ecommerce_app/screens/profile_screen.dart';
 import 'package:ecommerce_app/widgets/notification_icon.dart';
 import 'package:ecommerce_app/screens/chat_screen.dart';
 
-
 const kMetallicGray = Color(0xFF424242); 
 const kNeonAccent = Colors.greenAccent; 
 
@@ -27,6 +26,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final User? _currentUser = FirebaseAuth.instance.currentUser;
   String _userRole = 'user';
   bool _isLoading = true;
+  String _selectedCategory = 'All';
+
+  final Map<String, String> _categories = {
+    'All': 'All supplements',
+    'Whey Protein': 'High-quality protein for muscle building and recovery.',
+    'Creatine': 'Enhances strength and power during workouts.',
+    'Multi-vitamins': 'Comprehensive vitamins for overall health.',
+    'L-carnitine': 'Supports fat metabolism and energy production.',
+    'Pre-workout': 'Boosts energy and focus before exercise.',
+    'Mass Gainer': 'Helps in gaining muscle mass and weight.',
+  };
 
   @override
   void initState() {
@@ -75,9 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 50,
         ),
         actions: [
-
           const NotificationIcon(),
-
           IconButton(
             icon: const Icon(Icons.receipt_long_outlined, color: Colors.white),
             tooltip: 'My Orders',
@@ -89,8 +97,6 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-
-
           if (_userRole == 'admin')
             IconButton(
               icon: const Icon(Icons.admin_panel_settings, color: Colors.white),
@@ -104,7 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-
           Consumer<CartProvider>(
             builder: (context, cart, child) {
               return Stack(
@@ -143,7 +148,6 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-
           IconButton(
             icon: const Icon(Icons.person_outline, color: Colors.white),
             tooltip: 'Profile',
@@ -157,8 +161,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
-
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -183,11 +185,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: DropdownButton<String>(
+                value: _selectedCategory,
+                dropdownColor: kMetallicGray,
+                style: const TextStyle(color: Colors.white),
+                items: _categories.keys.map((category) {
+                  return DropdownMenuItem(
+                    value: category,
+                    child: Text(category, style: const TextStyle(color: Colors.white)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value!;
+                  });
+                },
+              ),
+            ),
+            if (_selectedCategory != 'All')
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  _categories[_selectedCategory]!,
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: _firestore
                     .collection('products')
+                    .where('isActive', isEqualTo: true)
                     .orderBy('createdAt', descending: true)
                     .snapshots(),
                 builder: (context, snapshot) {
@@ -212,7 +241,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
 
-                  final products = snapshot.data!.docs;
+                  final products = snapshot.data!.docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    return _selectedCategory == 'All' || data['category'] == _selectedCategory;
+                  }).toList();
 
                   return GridView.builder(
                     padding: const EdgeInsets.all(10),
@@ -233,6 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         price: (productData['price'] ?? 0).toDouble(),
                         imageUrl: productData['imageUrl'] ??
                             'https://via.placeholder.com/150',
+                        stock: productData['stock'] ?? 0,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -252,7 +285,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
       floatingActionButton: _userRole == 'user'
           ? StreamBuilder<DocumentSnapshot>(
               stream: _firestore

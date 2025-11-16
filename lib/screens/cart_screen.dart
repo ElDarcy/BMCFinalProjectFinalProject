@@ -146,7 +146,7 @@ class CartScreen extends StatelessWidget {
                       },
                 child: const Text(
                   'Place Order',
-                  style: TextStyle(fontSize: 18, color: Colors.black), 
+                  style: TextStyle(fontSize: 18, color: Colors.greenAccent), 
                 ),
               ),
             ),

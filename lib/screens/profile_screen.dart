@@ -2,9 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 
-
-const kNeonAccent = Colors.greenAccent; 
-const kMetallicGray = Color(0xFF424242); 
+const kNeonAccent = Colors.greenAccent;
+const kMetallicGray = Color(0xFF424242);
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,7 +12,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateMixin {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final User? _currentUser = FirebaseAuth.instance.currentUser;
 
@@ -22,10 +21,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
 
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+    _animationController.forward();
+  }
+
   @override
   void dispose() {
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -39,7 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Password changed successfully!', style: TextStyle(color: Colors.black)),
-          backgroundColor: kNeonAccent, 
+          backgroundColor: kNeonAccent,
         ),
       );
       _formKey.currentState!.reset();
@@ -49,7 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to change password: ${e.message}', style: const TextStyle(color: Colors.white)),
-          backgroundColor: Colors.redAccent, 
+          backgroundColor: Colors.redAccent,
         ),
       );
     } finally {
@@ -63,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Logged out successfully!', style: TextStyle(color: Colors.black)),
-        backgroundColor: kNeonAccent, 
+        backgroundColor: kNeonAccent,
       ),
     );
     Navigator.of(context).pushAndRemoveUntil(
@@ -77,14 +93,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: kMetallicGray, 
+        backgroundColor: kMetallicGray,
         elevation: 4,
       ),
-      body: SizedBox.expand(
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.black, 
-          ),
+      body: Container(
+        decoration: const BoxDecoration(
+          color: Colors.black,
+        ),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -93,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 10),
                 CircleAvatar(
                   radius: 45,
-                  backgroundColor: kMetallicGray, 
+                  backgroundColor: kMetallicGray,
                   child: Text(
                     _currentUser?.email?.substring(0, 1).toUpperCase() ?? '?',
                     style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
@@ -125,11 +142,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.white),
+                            borderSide: const BorderSide(color: Colors.white70),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: BorderSide(color: kNeonAccent), 
+                            borderSide: BorderSide(color: kNeonAccent),
                           ),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.1),
@@ -154,11 +171,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.white),
+                            borderSide: const BorderSide(color: Colors.white70),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: BorderSide(color: kNeonAccent), 
+                            borderSide: BorderSide(color: kNeonAccent),
                           ),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.1),
@@ -177,15 +194,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    backgroundColor: kNeonAccent, 
-                    foregroundColor: Colors.black, 
+                    backgroundColor: kNeonAccent,
+                    foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                   ),
                   onPressed: _isLoading ? null : _changePassword,
                   child: _isLoading
-                      ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.black)) 
+                      ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.black))
                       : const Text('Change Password'),
                 ),
                 const SizedBox(height: 40),
@@ -194,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kNeonAccent,
-                    foregroundColor: Colors.black, 
+                    foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.0),

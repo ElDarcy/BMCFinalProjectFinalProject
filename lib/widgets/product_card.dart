@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 const kNeonAccent = Colors.greenAccent; 
 const kMetallicGray = Color(0xFF424242); 
+
 class ProductCard extends StatelessWidget {
   final String productName;
   final double price;
   final String imageUrl;
+  final int stock;
   final VoidCallback onTap;
 
   const ProductCard({
@@ -13,8 +15,21 @@ class ProductCard extends StatelessWidget {
     required this.productName,
     required this.price,
     required this.imageUrl,
+    required this.stock,
     required this.onTap,
   });
+
+  String _getStockStatus() {
+    if (stock == 0) return 'Out of stock';
+    if (stock < 10) return 'Low stock';
+    return 'In stock';
+  }
+
+  Color _getStockColor() {
+    if (stock == 0) return Colors.red;
+    if (stock < 10) return Colors.orange;
+    return Colors.green;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +48,6 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Expanded(
               flex: 3,
               child: ClipRRect(
@@ -54,8 +68,6 @@ class ProductCard extends StatelessWidget {
                 ),
               ),
             ),
-
-
             Expanded(
               flex: 2,
               child: Padding(
@@ -79,6 +91,14 @@ class ProductCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         color: kNeonAccent, 
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      _getStockStatus(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _getStockColor(),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
