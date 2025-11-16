@@ -75,8 +75,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           SnackBar(content: Text(message), backgroundColor: Colors.red),
         );
       }
-    } catch (e) {
-      print(e);
     }
 
     if (!mounted) return;
@@ -87,6 +85,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        height: double.infinity, // <-- FIXED FULLSCREEN
+        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.black, kMetallicGray],
@@ -94,151 +94,157 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             end: Alignment.bottomCenter,
           ),
         ),
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 60.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 40),
-                  Image.asset(
-                    'assets/images/splash_logo.png',
-                    height: 80,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Welcome Back',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [Shadow(color: kNeonAccent.withOpacity(0.5), blurRadius: 10)],
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 40),
+
+                    Image.asset(
+                      'assets/images/splash_logo.png',
+                      height: 90,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Login to your Supplements Store',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
-                  ),
-                  const SizedBox(height: 40),
-                  Card(
-                    color: kMetallicGray.withOpacity(0.8),
-                    elevation: 12,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+
+                    const SizedBox(height: 20),
+                    Text(
+                      'Welcome Back',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: kNeonAccent.withOpacity(0.6),
+                            blurRadius: 12,
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _emailController,
-                              decoration: InputDecoration(
-                                labelText: 'Email',
-                                labelStyle: const TextStyle(color: Colors.white),
-                                prefixIcon: const Icon(Icons.email, color: kNeonAccent),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  borderSide: const BorderSide(color: Colors.white),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Login to your Supplements Store',
+                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                    ),
+                    const SizedBox(height: 40),
+
+                    Card(
+                      color: kMetallicGray.withOpacity(0.85),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      elevation: 10,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                controller: _emailController,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  labelText: 'Email',
+                                  labelStyle: const TextStyle(color: Colors.white),
+                                  prefixIcon: const Icon(Icons.email, color: kNeonAccent),
+                                  filled: true,
+                                  fillColor: Colors.white12,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Colors.white70),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: kNeonAccent),
+                                  ),
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  borderSide: const BorderSide(color: Colors.white70),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  borderSide: BorderSide(color: kNeonAccent),
-                                ),
-                                filled: true,
-                                fillColor: Colors.white.withOpacity(0.1),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) return 'Enter email';
+                                  if (!value.contains('@')) return 'Invalid email';
+                                  return null;
+                                },
                               ),
-                              style: const TextStyle(color: Colors.white),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) return 'Enter email';
-                                if (!value.contains('@')) return 'Enter valid email';
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 20),
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: true,
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                labelStyle: const TextStyle(color: Colors.white),
-                                prefixIcon: const Icon(Icons.lock, color: kNeonAccent),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  borderSide: const BorderSide(color: Colors.white),
+
+                              const SizedBox(height: 20),
+
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: true,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  labelText: 'Password',
+                                  labelStyle: const TextStyle(color: Colors.white),
+                                  prefixIcon: const Icon(Icons.lock, color: kNeonAccent),
+                                  filled: true,
+                                  fillColor: Colors.white12,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Colors.white70),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: kNeonAccent),
+                                  ),
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  borderSide: const BorderSide(color: Colors.white70),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  borderSide: BorderSide(color: kNeonAccent),
-                                ),
-                                filled: true,
-                                fillColor: Colors.white.withOpacity(0.1),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) return 'Enter password';
+                                  if (value.length < 6) return 'Weak password';
+                                  return null;
+                                },
                               ),
-                              style: const TextStyle(color: Colors.white),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) return 'Enter password';
-                                if (value.length < 6) return 'Weak password';
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 30),
-                            ElevatedButton.icon(
-                              onPressed: _isLoading ? null : _login,
-                              icon: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation(Colors.black),
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Icon(Icons.login),
-                              label: Text(_isLoading ? 'Logging in...' : 'Login'),
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(double.infinity, 50),
-                                backgroundColor: kNeonAccent,
-                                foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
+
+                              const SizedBox(height: 30),
+
+                              ElevatedButton.icon(
+                                onPressed: _isLoading ? null : _login,
+                                icon: _isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation(Colors.black),
+                                        ),
+                                      )
+                                    : const Icon(Icons.login),
+                                label: Text(_isLoading ? "Logging in..." : "Login"),
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(double.infinity, 50),
+                                  backgroundColor: kNeonAccent,
+                                  foregroundColor: Colors.black,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
-                                elevation: 8,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SignUpScreen()),
-                      );
-                    },
-                    child: Text(
-                      "Don't have an account? Sign Up",
-                      style: TextStyle(color: kNeonAccent, fontSize: 16),
+                    const SizedBox(height: 20),
+
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                        );
+                      },
+                      child: Text(
+                        "Don't have an account? Sign Up",
+                        style: TextStyle(color: kNeonAccent, fontSize: 16),
+                      ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),
